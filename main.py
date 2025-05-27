@@ -3,8 +3,8 @@ import requests
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-BOT_TOKEN = "COLE_SEU_TOKEN_AQUI"
-FIVESIM_API_KEY = "COLE_SUA_API_KEY_AQUI"
+BOT_TOKEN = "7862970938:AAEM6nt5pxM-0msXg9w9hhlJyi_YJ0J6j94"
+FIVESIM_API_KEY = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzk4MDY3NzQs"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
