@@ -30,4 +30,4 @@ app = ApplicationBuilder().token(BOT_TOKEN).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CallbackQueryHandler(button))
 
-app.run_polling()
+app.run_webhook(listen="0.0.0.0", port=10000, webhook_url="https://zapfast-bot.onrender.com/")
