@@ -18,11 +18,21 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     service = query.data
+
+    # Mensagem de pagamento via Pix
+    if service == "if service == "whatsapp":":
+        await query.edit_message_text(
+            "✅ Para continuar, envie o pagamento de R$ 11,00 via Pix:\n\n"
+            "🔑 *Chave Pix:* `40752756800`\n📛 *Nome:* ZapFast\n\n"
+            "Após o pagamento, aguarde o recebimento do número virtual."
+        )
+        return  # Interrompe o processo até o pagamento
+
     headers = {"Authorization": f"Bearer {FIVESIM_API_KEY}"}
-    response = requests.get("https://5sim.net/v1/user/profile", headers=headers)
+    response = requests.get(f"https://5sim.net/v1/user/check/{service}", headers=headers)
 
     if response.status_code == 200:
-        await query.edit_message_text(f"Número para {service.upper()} reservado com sucesso! (simulado)")
+        await query.edit_message_text(f"Número para {service} reservado com sucesso! (simulado)")
     else:
         await query.edit_message_text("Erro ao conectar com a 5sim. Verifique sua API Key.")
 
