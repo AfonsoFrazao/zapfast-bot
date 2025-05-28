@@ -20,7 +20,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     service = query.data
 
     # Mensagem de pagamento via Pix
-    if service == "if service == "whatsapp":":
+    if service == "whatsapp":":
         await query.edit_message_text(
             "✅ Para continuar, envie o pagamento de R$ 11,00 via Pix:\n\n"
             "🔑 *Chave Pix:* `40752756800`\n📛 *Nome:* ZapFast\n\n"
