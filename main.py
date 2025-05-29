@@ -1,78 +1,105 @@
 import requests
 from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
 
-BOT_TOKEN = "7293365088:AAFvTLxHmRpDi4jyn_ZLZ4eFFxbll68CZUc"
-FIVESIM_API_KEY = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzk4MDY3NzQsImlhdCI6MTc0ODI3MDc3NCwicmF5IjoiOWI5OWQzYzZiMTRkM2E4M2RlMThhNGNiOWJhMDRmZGEiLCJzdWIiOjMyNDUzODh9.FY1nfeNlEgTOEJzyTr1VvdTXJRGK3FePQEdY8U7H0kkHGbxMhv9FplRl_vn4YvE10nTaMbQkIAcitnUKy0duFTivUfVb_KmHZEfd5tZB-1Gf6bxOmL7WnXonCvTXQsRoyiJzpCOUdhMj2NXhk7aw9ZDIpPqmEFQbmGQRPovrzds15fknM2vrXPVad5i0WN1IKRV0JxvaOHuM5osjmJXbn9g1r-vvxwFbxD69ciPQOL4iDh_oxL-GDWDCBk13UrjWKVsuJmNgc7RTJfcnj5w6W8Nu_dVcR4Rn-Hp16fchnx-u7wbZWlpakb68mw1YhLWV2KQb1868Vj5dKLW5IJm0SA"
+# Dicionário de saldo (simulado)
+user_balances = {}
 
-# Comando /start com menu principal
+def get_balance(user_id):
+    return user_balances.get(user_id, 0.0)
+
+def set_balance(user_id, amount):
+    user_balances[user_id] = amount
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.message.from_user.id
+    if user_id not in user_balances:
+        set_balance(user_id, 0.0)
+
     keyboard = [
         ["🔥 Serviços", "💰 Saldo"],
-        ["🔁 Recarregar", "📍 Países"],
-        ["🤝 Afiliados", "📘 Dicas de Uso"]
+        ["🔁 Recarregar", "📘 Dicas de Uso"]
     ]
     reply_markup = ReplyKeyboardMarkup(
         keyboard, resize_keyboard=True, one_time_keyboard=False
     )
-    await update.message.reply_text("⌛ Carregando menu...")
     await update.message.reply_text(
-        "👋 Olá! Bem-vindo ao *ZapFast*.\nEscolha uma das opções abaixo para começar:",
+        "👋 Bem-vindo ao ZapFast!\nEscolha uma opção abaixo:",
         reply_markup=reply_markup
     )
 
-# Mensagem quando usuário digita "Serviços"
-async def servicos(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [
-            InlineKeyboardButton("WhatsApp", callback_data="whatsapp"),
-            InlineKeyboardButton("Instagram", callback_data="instagram"),
-        ],
-        [
-            InlineKeyboardButton("Telegram", callback_data="telegram"),
-            InlineKeyboardButton("Facebook", callback_data="facebook"),
-        ],
-        [
-            InlineKeyboardButton("Google/YouTube/Gmail", callback_data="google"),
-            InlineKeyboardButton("Nubank / Inter / PicPay", callback_data="bancos"),
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+    user_id = update.message.from_user.id
+
+    if text == "🔥 Serviços":
+        keyboard = [
+            [InlineKeyboardButton("WhatsApp", callback_data="whatsapp"),
+             InlineKeyboardButton("Instagram", callback_data="instagram")],
+            [InlineKeyboardButton("Telegram", callback_data="telegram"),
+             InlineKeyboardButton("Facebook", callback_data="facebook")],
+            [InlineKeyboardButton("Google/YouTube/Gmail", callback_data="google")],
+            [InlineKeyboardButton("Nubank/Inter/PicPay", callback_data="bancos")]
         ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(
-        "👋 Olá! Bem-vindo ao *ZapFast*.\nEscolha o serviço desejado abaixo:",
-        reply_markup=reply_markup
-    )
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text("Escolha o serviço desejado:", reply_markup=reply_markup)
 
-# Quando o usuário clica em um botão do InlineKeyboard
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    elif text == "💰 Saldo":
+        balance = get_balance(user_id)
+        await update.message.reply_text(f"💰 Seu saldo atual é: R$ {balance:.2f}")
+
+    elif text == "🔁 Recarregar":
+        set_balance(user_id, get_balance(user_id) + 10.99)
+        await update.message.reply_text("✅ R$ 10,99 adicionados ao seu saldo com sucesso!")
+
+    elif text == "📘 Dicas de Uso":
+        await update.message.reply_text("💡 Dica: Use os serviços com atenção ao país e plataforma desejados.")
+
+async def service_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    user_id = query.from_user.id
+    service = query.data
+    await query.answer()
+
+    balance = get_balance(user_id)
+    price = 10.99
+
+    if balance >= price:
+        new_balance = balance - price
+        set_balance(user_id, new_balance)
+        await query.edit_message_text(
+            f"✅ Compra de número para *{service.upper()}* autorizada!\n\n"
+            f"💸 R$ {price:.2f} foi debitado do seu saldo.\n"
+            f"💰 Saldo atual: R$ {new_balance:.2f}\n\n"
+            "📦 Aguarde o envio do número virtual..."
+        )
+    else:
+        keyboard = [[InlineKeyboardButton("💰 Recarregar Saldo", callback_data="recarregar")]]
+        await query.edit_message_text(
+            f"❌ Saldo insuficiente para comprar número de {service.title()}.\n\n"
+            f"💰 Seu saldo atual: R$ {balance:.2f}\n"
+            "Para continuar, recarregue seu saldo:",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+async def inline_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    service = query.data
 
-    # Simulação de pagamento apenas para WhatsApp
-    if service == "whatsapp":
-        await query.edit_message_text(
-            "✅ Para continuar, envie o pagamento de R$ 11,00 via Pix:\n\n"
-            "🔑 *Chave Pix:* 40752756800\n"
-            "📛 *Nome:* ZapFast\n\n"
-            "🕓 Após o pagamento, aguarde o recebimento do número virtual."
-        )
-        return
+    if query.data == "recarregar":
+        user_id = query.from_user.id
+        set_balance(user_id, get_balance(user_id) + 10.99)
+        await query.edit_message_text("✅ R$ 10,99 recarregados com sucesso!\nTente novamente a compra agora.")
 
-    # Simulação de verificação de número para demais serviços
-    headers = {"Authorization": f"Bearer {FIVESIM_API_KEY}"}
-    response = requests.get(f"https://5sim.net/v1/user/check/{service}", headers=headers)
+# TOKEN DO BOT
+BOT_TOKEN = "7293365088:AAFvTLxHmRpDi4jyn_ZLZ4eFFxbll68CZUc"
 
-    if response.status_code == 200:
-        await query.edit_message_text(f"Número para {service} reservado com sucesso! (simulado)")
-    else:
-        await query.edit_message_text("Erro ao conectar com a 5sim. Verifique sua API Key.")
-
-# Construção da aplicação
+# EXECUÇÃO DO BOT
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex("🔥 Serviços"), servicos))
-app.add_handler(CallbackQueryHandler(button))
+app.add_handler(MessageHandler(filters.TEXT, handle_message))
+app.add_handler(CallbackQueryHandler(service_handler))
+app.add_handler(CallbackQueryHandler(inline_callback, pattern="recarregar"))
 
 app.run_webhook(
     listen="0.0.0.0",
