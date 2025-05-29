@@ -6,13 +6,19 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandle
 BOT_TOKEN = "7862970938:AAEM6nt5pxM-0msXg9w9hhlJyi_YJ0J6j94"
 FIVESIM_API_KEY = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Nzk4MDY3NzQsImlhdCI6MTc0ODI3MDc3NCwicmF5IjoiOWI5OWQzYzZiMTRkM2E4M2RlMThhNGNiOWJhMDRmZGEiLCJzdWIiOjMyNDUzODh9.FY1nfeNlEgTOEJzyTr1VvdTXJRGK3FePQEdY8U7H0kkHGbxMhv9FplRl_vn4YvE10nTaMbQkIAcitnUKy0duFTivUfVb_KmHZEfd5tZB-1Gf6bxOmL7WnXonCvTXQsRoyiJzpCOUdhMj2NXhk7aw9ZDIpPqmEFQbmGQRPovrzds15fknM2vrXPVad5i0WN1IKRV0JxvaOHuM5osjmJXbn9g1r-vvxwFbxD69ciPQOL4iDh_oxL-GDWDCBk13UrjWKVsuJmNgc7RTJfcnj5w6W8Nu_dVcR4Rn-Hp16fchnx-u7wbZWlpakb68mw1YhLWV2KQb1868Vj5dKLW5IJm0SA"
 
+from telegram import ReplyKeyboardMarkup
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [InlineKeyboardButton("WhatsApp (BR)", callback_data='whatsapp')],
-        [InlineKeyboardButton("Instagram (BR)", callback_data='instagram')]
+        ["🔥 Serviços", "💰 Saldo"],
+        ["💸 Recarregar", "🚩 Países"],
+        ["🤝 Afiliados", "📚 Dicas de Uso"]
     ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Bem-vindo ao ZapFast! Escolha um serviço abaixo:", reply_markup=reply_markup)
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    await update.message.reply_text(
+        "👋 Olá! Bem-vindo ao ZapFast.\nEscolha uma das opções abaixo para começar:",
+        reply_markup=reply_markup
+    )
 
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
